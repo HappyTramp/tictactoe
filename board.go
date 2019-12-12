@@ -4,16 +4,21 @@ import (
     "fmt"
 )
 
-type Board [3][3]byte
+type Cell byte
+
+const (
+	Empty = 0
+	Cross = 1
+	Circle = 2
+)
+
+type Board [3][3]Cell
 
 func (b *Board) CheckWin() bool {
-    var rowCheck, colCheck, diagCheck, antiDiagCheck bool
-
     for i := 0; i < 3; i++ {
-        rowCheck = true
-        colCheck = true
+		rowCheck := true
+		colCheck := true
         for j := 0; j < 3; j++ {
-            // fmt.Println(b[i][j], Empty)
             if b[i][j] == Empty || b[i][j] != b[i][(j + 1) % 3] {
                 rowCheck = false
             }
@@ -25,43 +30,23 @@ func (b *Board) CheckWin() bool {
             return true
         }
     }
-    diagCheck, antiDiagCheck = true, true
-    for i, j := 0, 0; i < 3; i, j = i + 1, j + 1 {
-        if b[i][j] == Empty || b[i][j] != b[(i + 1) % 3][(j + 1) % 3] {
-            diagCheck = false
-        }
-        if b[i][2 - j] == Empty ||
-        b[i][2 - j] != b[(i + 1) % 3][positiveMod(2 - j - 1, 3)] {
-            antiDiagCheck = false
-        }
-    }
-    return diagCheck || antiDiagCheck
+	return b[1][1] != Empty &&
+	       ((b[0][0] == b[1][1] && b[0][0] == b[2][2]) ||
+	        (b[0][2] == b[1][1] && b[0][2] == b[2][0]))
 }
 
 func (b *Board) Print() {
     for _, row := range b {
         for _, v := range row {
             switch v {
-            case 0:
-                fmt.Print("_ ")
-            case 1:
-                fmt.Print("O ")
-            case 2:
-                fmt.Print("X ")
+            case Empty:
+				fmt.Print("_ ")
+            case Cross:
+				fmt.Print("X ")
+            case Circle:
+				fmt.Print("O ")
             }
         }
         fmt.Print("\n")
     }
-}
-
-// Positive modulo, returns non negative solution to x % d
-func positiveMod(a, b int) int {
-    m := a % b
-    if a < 0 && b < 0 {
-        m -= b
-    }
-    if a < 0 && b > 0 {
-        m += b
-    }
-    return m
 }

@@ -4,15 +4,10 @@ import (
     "fmt"
 )
 
-type Player byte
-const (
-    Empty = 0
-    crossPlayer = 1
-    circlePlayer = 2
-)
+type Player Cell
 
 type Game struct {
-    currentPlayer Player
+    player Player
     board Board
 }
 
@@ -25,21 +20,23 @@ func (g *Game) Loop() {
             fmt.Print("\nEnter index: ")
             n, err := fmt.Scanf("%d %d", &y, &x)
             if n != 2 || err != nil {
+				fmt.Print("Input Error\n");
                 continue
             }
         }
         g.next()
         g.board.Print()
     }
-    fmt.Printf("%v player won\n", g.currentPlayer.String())
+    g.next()
+    fmt.Printf("%v player won\n", g.player.String())
 }
 
 func (g *Game) next() {
-    switch g.currentPlayer {
-    case crossPlayer:
-        g.currentPlayer = circlePlayer
-    case circlePlayer:
-        g.currentPlayer = crossPlayer
+    switch g.player {
+    case Cross:
+        g.player = Circle
+    case Circle:
+        g.player = Cross
     }
 }
 
@@ -47,7 +44,7 @@ func (g *Game) setAt(y, x int) error {
     if !inBorder(y, x) || g.board[y][x] != Empty {
         return &BoardIndexError{y, x}
     }
-    g.board[y][x] = byte(g.currentPlayer)
+    g.board[y][x] = Cell(g.player)
     return nil
 }
 
@@ -57,10 +54,10 @@ func inBorder(y, x int) bool {
 
 func (p *Player) String() string {
     switch *p {
-    case crossPlayer:
-        return "X"
-    case circlePlayer:
-        return "O"
+    case Cross:
+		return "X"
+    case Circle:
+		return "O"
     }
     return " "
 }

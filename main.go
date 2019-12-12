@@ -1,12 +1,8 @@
 package main
 
-// import (
-//     "fmt"
-// )
-
 func main() {
     g := Game{
-        currentPlayer: 1,
+        player: Cross,
     }
     g.Loop()
 }
