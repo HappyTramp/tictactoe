@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+	"math/rand"
 )
 
 type Player Cell
@@ -9,6 +10,10 @@ type Player Cell
 type Game struct {
     player Player
     board Board
+}
+
+type Position struct {
+	y, x int
 }
 
 func (g *Game) Loop() {
@@ -26,9 +31,31 @@ func (g *Game) Loop() {
         }
         g.next()
         g.board.Print()
+		if g.board.CheckWin() {
+			break
+		}
+		g.aiPlay()
+        g.next()
+        g.board.Print()
     }
     g.next()
     fmt.Printf("%v player won\n", g.player.String())
+}
+
+func (g *Game) aiPlay() {
+	var possible [9]Position;
+	possibleIndex := 0;
+
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if (g.board[i][j] == Empty) {
+				possible[possibleIndex] = Position{i, j};
+				possibleIndex++;
+			}
+		}
+	}
+	picked := possible[rand.Intn(possibleIndex)]
+	g.setAt(picked.y, picked.x)
 }
 
 func (g *Game) next() {

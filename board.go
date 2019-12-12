@@ -50,3 +50,7 @@ func (b *Board) Print() {
         fmt.Print("\n")
     }
 }
+
+// func (b Board) Minimax() {
+
+// }
