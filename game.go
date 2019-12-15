@@ -2,11 +2,19 @@ package main
 
 import (
     "fmt"
-	"math/rand"
+	// "math/rand"
 )
 
-type Player Cell
+const (
+	Empty = iota
+	Cross = iota
+	Circle = iota
+)
 
+type Cell byte
+type Board [3][3]Cell
+
+type Player Cell
 type Game struct {
     player Player
     board Board
@@ -43,19 +51,85 @@ func (g *Game) Loop() {
 }
 
 func (g *Game) aiPlay() {
-	var possible [9]Position;
-	possibleIndex := 0;
+	// var possible [9]Position;
+	// possibleIndex := 0;
 
+    best := MinInt32
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			if (g.board[i][j] == Empty) {
-				possible[possibleIndex] = Position{i, j};
-				possibleIndex++;
+
+                g.board[i][j] = Circle
+                g.player = Cross
+                best = max(best, minimax(g))
+                g.player = Circle
+                g.board[i][j] = Empty
+				// possible[possibleIndex] = Position{i, j};
+				// possibleIndex++;
 			}
 		}
 	}
-	picked := possible[rand.Intn(possibleIndex)]
-	g.setAt(picked.y, picked.x)
+	// picked := possible[rand.Intn(possibleIndex)]
+	// g.setAt(picked.y, picked.x)
+}
+
+func min(x, y int) int {
+    if x < y {
+        return x
+    } else {
+        return y
+    }
+}
+
+func max(x, y int) int {
+    if x > y {
+        return x
+    } else {
+        return y
+    }
+}
+
+func (g Game) minimax() int {
+    switch g.CheckWin() {
+        case Cross:
+            return 1
+        case Circle:
+            return -1
+    }
+    // mini
+    if (g.player == Cross) {
+        best := MaxInt32
+        for i := 0; i < 3; i++ {
+            for j := 0; j < 3; j++ {
+                if g.board[i][j] != Empty {
+                    continue
+                }
+                g.board[i][j] = Cross
+                g.player = Circle
+                best = min(best, minimax(g))
+                g.player = Cross
+                g.board[i][j] = Empty
+            }
+        }
+        return best
+    }
+    // max
+    else if g.player == Circle {
+        best := MinInt32
+        for i := 0; i < 3; i++ {
+            for j := 0; j < 3; j++ {
+                if g.board[i][j] != Empty {
+                    continue
+                }
+                g.board[i][j] = Circle
+                g.player = Cross
+                best = max(best, minimax(g))
+                g.player = Circle
+                g.board[i][j] = Empty
+            }
+        }
+        return best
+    }
 }
 
 func (g *Game) next() {
@@ -80,13 +154,53 @@ func inBorder(y, x int) bool {
 }
 
 func (p *Player) String() string {
-    switch *p {
-    case Cross:
-		return "X"
-    case Circle:
-		return "O"
+    return Cell(p).String()
+}
+
+func (g *Game) winner() Player {
+    b := g.board
+    for i := 0; i < 3; i++ {
+		rowCheck := true
+		colCheck := true
+        for j := 0; j < 3; j++ {
+            if b[i][j] == Empty || b[i][j] != b[i][(j + 1) % 3] {
+                rowCheck = false
+            }
+            if b[j][i] == Empty || b[j][i] != b[(j + 1) % 3][i] {
+                colCheck = false
+            }
+        }
+        if rowCheck || colCheck {
+            return b[i][i]
+        }
     }
-    return " "
+	if b[1][1] != Empty &&
+	   ((b[0][0] == b[1][1] && b[0][0] == b[2][2]) ||
+	    (b[0][2] == b[1][1] && b[0][2] == b[2][0])) {
+        return b[1][1]
+    }
+    return nil
+}
+
+func (g *Game) String() string {
+    fmt.Println("1 2 3")
+    for i, row := range b {
+        fmt.Printf("%v ", i + 1)
+        for _, v := range row {
+            fmt.Print(v)
+        }
+        fmt.Print("\n")
+    }
+}
+
+func (c *Cell) String() string {
+    switch c {
+    case Empty:
+        return "_ "
+    case Cross:
+        return "X "
+    case Circle:
+        return "O "
 }
 
 type BoardIndexError struct {
@@ -94,5 +208,5 @@ type BoardIndexError struct {
 }
 
 func (e *BoardIndexError) Error() string {
-    return fmt.Sprintf("%v %v is not a valid index", e.y, e.x)
+    return fmt.Sprintf("[%v %v] is not a valid index", e.y, e.x)
 }
