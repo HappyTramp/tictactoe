@@ -40,6 +40,7 @@ func (g *Game) Loop() {
             }
         }
         g.next()
+		fmt.Println()
 		fmt.Print(g)
 		if g.winner() != Empty {
 			break
@@ -47,6 +48,7 @@ func (g *Game) Loop() {
 		fmt.Println("AI play")
 		g.aiPlay()
         g.next()
+		fmt.Println()
 		fmt.Print(g)
     }
 	if g.winner() == NoWinner {
@@ -55,76 +57,6 @@ func (g *Game) Loop() {
     	g.next()
 		fmt.Printf("%v player won\n", g.player.String())
 	}
-}
-
-func (g *Game) aiPlay() {
-	var move Position
-    bestScore := -2
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			if g.board[i][j] != Empty {
-				continue
-			}
-			g.board[i][j] = Circle
-			g.player = Cross
-			score := g.minimax()
-			if score > bestScore {
-				bestScore = score
-				move = Position{i, j}
-			}
-			g.player = Circle
-			g.board[i][j] = Empty
-		}
-	}
-	g.setAt(move.y, move.x)
-}
-
-func (g Game) minimax() int {
-    switch g.winner() {
-	case Cross:  return -1
-	case Circle: return 1
-	case NoWinner: return 0
-    }
-
-	var best int
-	switch g.player {
-    // mini, human
-	case Cross:
-        best = 2
-        g.player = Circle
-        for i := 0; i < 3; i++ {
-            for j := 0; j < 3; j++ {
-                if g.board[i][j] != Empty {
-                    continue
-                }
-                g.board[i][j] = Cross
-				if score := g.minimax(); score < best {
-					best = score
-				}
-                g.board[i][j] = Empty
-            }
-        }
-    	g.player = Cross
-
-    // max, ai
-	case Circle:
-        best = -2
-		g.player = Cross
-        for i := 0; i < 3; i++ {
-            for j := 0; j < 3; j++ {
-                if g.board[i][j] != Empty {
-                    continue
-                }
-                g.board[i][j] = Circle
-				if score := g.minimax(); score > best {
-					best = score
-				}
-                g.board[i][j] = Empty
-            }
-        }
-		g.player = Circle
-    }
-	return best
 }
 
 func (g *Game) isTie() bool {
